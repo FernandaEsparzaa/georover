@@ -1,0 +1,388 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <meta name="theme-color" content="#080d18">
+
+  <title>GeoRover | Centro de control 3D</title>
+
+  <link rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+  <div class="brand">
+    <div class="brand-icon">◈</div>
+
+    <div>
+      <h1>GEO<span>ROVER</span></h1>
+      <small>ESTACIÓN GEOESPACIAL · ESP32</small>
+    </div>
+  </div>
+
+  <div class="status">
+    <span id="indicador" class="status-dot"></span>
+    <span id="conexion">DESCONECTADO</span>
+  </div>
+
+</header>
+
+<main class="dashboard">
+
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">MISSION CONTROL / 01</p>
+      <h2>Panel de operaciones</h2>
+    </div>
+
+    <span class="version">
+      ROVER SYSTEM v2.0 · 3D
+    </span>
+  </div>
+
+  <section class="metrics">
+
+    <article class="metric">
+      <span class="metric-label">TEMPERATURA</span>
+      <strong id="temperatura">-- °C</strong>
+      <span class="metric-foot">Sensor AHT20</span>
+    </article>
+
+    <article class="metric">
+      <span class="metric-label">HUMEDAD</span>
+      <strong id="humedad">-- %</strong>
+      <span class="metric-foot">Sensor AHT20</span>
+    </article>
+
+    <article class="metric">
+      <span class="metric-label">PRESIÓN</span>
+      <strong id="presion">-- hPa</strong>
+      <span class="metric-foot">Sensor BMP280</span>
+    </article>
+
+    <article class="metric">
+      <span class="metric-label">OBSTÁCULO</span>
+      <strong id="distancia">-- cm</strong>
+      <span class="metric-foot">Sensor HC-SR04</span>
+    </article>
+
+  </section>
+
+  <section class="main-grid">
+
+    <!-- MAPA 3D -->
+
+    <article class="panel map-panel">
+
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">NAVIGATION / GPS</p>
+          <h3>Mapa de misión 3D</h3>
+        </div>
+
+        <span id="estadoGPS" class="chip">
+          SIN FIX
+        </span>
+      </div>
+
+      <div class="map-controls">
+
+        <label for="estiloMapa">ESTILO</label>
+
+        <select id="estiloMapa">
+          <option value="streets">Calles 3D</option>
+          <option value="dark">Nocturno 3D</option>
+          <option value="satellite">Satélite</option>
+        </select>
+
+        <button id="vista3D" class="secondary-btn">
+          3D ACTIVO
+        </button>
+
+        <button id="seguirCarrito"
+                class="secondary-btn selected">
+          SEGUIR: SÍ
+        </button>
+
+      </div>
+
+      <div id="mapa">
+        <div class="map-overlay" id="mapaAviso">
+          Esperando conexión con el mapa...
+        </div>
+      </div>
+
+      <div class="route-toolbar">
+
+        <div class="route-stat">
+          <span>DISTANCIA RECORRIDA</span>
+          <strong id="distanciaRecorrida">0.0 m</strong>
+        </div>
+
+        <div class="route-stat">
+          <span>PUNTOS GPS</span>
+          <strong id="puntosGPS">0</strong>
+        </div>
+
+        <button id="centrarCarrito"
+                class="secondary-btn">
+          ◎ CENTRAR
+        </button>
+
+        <button id="limpiarRuta"
+                class="secondary-btn">
+          ↺ LIMPIAR RUTA
+        </button>
+
+      </div>
+
+      <div class="coordinates">
+
+        <div>
+          <small>LATITUD</small>
+          <strong id="latitud">--</strong>
+        </div>
+
+        <div>
+          <small>LONGITUD</small>
+          <strong id="longitud">--</strong>
+        </div>
+
+        <div>
+          <small>SATÉLITES</small>
+          <strong id="satelites">--</strong>
+        </div>
+
+      </div>
+
+      <div class="destination">
+
+        <h4>DESTINO SELECCIONADO</h4>
+
+        <p>
+          Haz clic en una calle del mapa para
+          marcar un objetivo.
+        </p>
+
+        <div class="destination-coords">
+
+          <span>
+            LAT: <b id="destinoLat">--</b>
+          </span>
+
+          <span>
+            LNG: <b id="destinoLng">--</b>
+          </span>
+
+        </div>
+
+        <div class="destination-actions">
+
+          <button id="enviarDestino"
+                  class="primary-btn">
+            ◎ ENVIAR DESTINO
+          </button>
+
+          <button id="cancelarDestino"
+                  class="secondary-btn">
+            CANCELAR
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+    <!-- CONTROL REMOTO -->
+
+    <article class="panel control-panel">
+
+      <div class="panel-header">
+
+        <div>
+          <p class="eyebrow">REMOTE CONTROL / 02</p>
+          <h3>Joystick de conducción</h3>
+        </div>
+
+        <span class="chip" id="chipModo">
+          MANUAL
+        </span>
+
+      </div>
+
+      <p class="help">
+        Arrastra el joystick para conducir.
+        Al soltarlo, se enviará STOP.
+        También puedes utilizar W, A, S, D.
+      </p>
+
+      <div class="gamepad">
+
+        <div class="joystick-container">
+
+          <div id="joystick" class="joystick">
+
+            <div class="joystick-ring"></div>
+
+            <span class="joy-arrow joy-up">▲</span>
+            <span class="joy-arrow joy-down">▼</span>
+            <span class="joy-arrow joy-left">◀</span>
+            <span class="joy-arrow joy-right">▶</span>
+
+            <div class="joy-axis horizontal"></div>
+            <div class="joy-axis vertical"></div>
+
+            <div id="joystickStick"
+                 class="joystick-stick">
+
+              <div class="joystick-inner">
+                <div class="joystick-light"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div id="joystickEstado"
+               class="joystick-status">
+            NEUTRAL · STOP
+          </div>
+
+          <small class="joystick-help">
+            ARRASTRA PARA CONDUCIR
+          </small>
+
+        </div>
+
+        <div class="action-buttons">
+
+          <button id="detener" class="stop-button">
+            STOP
+          </button>
+
+          <span>EMERGENCY STOP</span>
+
+        </div>
+
+      </div>
+
+      <div class="modes">
+
+        <h4>MODOS DE OPERACIÓN</h4>
+
+        <div class="mode-buttons">
+
+          <button id="manual"
+                  class="mode-btn selected">
+            🎮 MANUAL
+          </button>
+
+          <button id="linea" class="mode-btn">
+            ◉ LÍNEA
+          </button>
+
+          <button id="automatico" class="mode-btn">
+            ◎ AUTO
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="control-status">
+
+        <div>
+          <small>MOVIMIENTO ACTUAL</small>
+          <strong id="movimiento">DETENIDO</strong>
+        </div>
+
+        <div>
+          <small>ÚLTIMA LECTURA</small>
+          <strong id="fechaHora">--</strong>
+        </div>
+
+      </div>
+
+      <p id="mensajeControl" class="message">
+        Esperando conexión con el gateway...
+      </p>
+
+    </article>
+
+  </section>
+
+  <!-- HISTORIAL -->
+
+  <section class="panel history-panel">
+
+    <div class="panel-header history-heading">
+
+      <div>
+        <p class="eyebrow">DATA LOGGER / 03</p>
+        <h3>Historial de telemetría</h3>
+      </div>
+
+      <div class="export-actions">
+
+        <a href="/api/registros.csv"
+           download class="secondary-btn">
+          ↓ CSV
+        </a>
+
+        <button id="descargarJSON"
+                class="secondary-btn">
+          ↓ JSON
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="table-scroll">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>FECHA</th>
+            <th>TEMPERATURA</th>
+            <th>HUMEDAD</th>
+            <th>PRESIÓN</th>
+            <th>DISTANCIA</th>
+            <th>MOVIMIENTO</th>
+          </tr>
+        </thead>
+
+        <tbody id="tablaDatos"></tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  GEO ROVER · ESTACIÓN DE RECONOCIMIENTO
+</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

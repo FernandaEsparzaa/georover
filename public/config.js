@@ -1,0 +1,2 @@
+window.GEOROVER_MAPTILER_KEY =
+  "bAKVrf6FeUFwPGnTS9cZ";

@@ -1,0 +1,16 @@
+{
+  "name": "estacion-geoespacial",
+  "version": "1.0.0",
+  "description": "Aplicacion web para carrito ESP32 con LoRa y MQTT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.22.3",
+    "mongodb": "^7.9.1",
+    "mqtt": "^5.16.1",
+    "socket.io": "^4.8.4"
+  }
+}
