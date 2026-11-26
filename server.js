@@ -25,8 +25,8 @@ const MONGO_URI =
 const DB_NAME =
   process.env.MONGODB_DB || "georover";
 
-const TOPICO_DATOS = "georover/prueba2026/telemetria";
-const TOPICO_COMANDOS = "georover/prueba2026/comandos";
+const TOPICO_DATOS = "terreneitor/telemetria";
+const TOPICO_COMANDOS = "terreneitor/comandos";
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.static(path.join(__dirname, "public")));
